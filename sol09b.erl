@@ -50,19 +50,16 @@ split_list(List, Mid) ->
 	 lists:reverse(lists:sort(B))}.
 
 
-find_sum_range([_|Tail] = Nums, Target) ->
-	case find_initial_sum(Nums, 0, [], Target) of
-		fail ->
-			find_sum_range(Tail, Target);
-		List ->
-			List
-	end.
+find_sum_range(Nums, Target) ->
+	iterate_sum(Nums, Target, queue:new(), 0).
 
-find_initial_sum([Value|_Tail], Cur, Acc, Target)
-  when Value + Cur == Target ->
-	lists:reverse([Value|Acc]);
-find_initial_sum([Value|_Tail], Cur, _Acc, Target)
-  when Value + Cur > Target ->
-	fail;
-find_initial_sum([Value|Tail], Cur, Acc, Target) ->
-	find_initial_sum(Tail, Cur+Value, [Value|Acc], Target).
+iterate_sum(_Nums, Target, Queue, Target) ->
+	queue:to_list(Queue);
+iterate_sum(Nums, Target, Queue, Total)
+  when Total > Target ->
+	{{value, N}, NewQueue} = queue:out(Queue),
+	iterate_sum(Nums, Target, NewQueue, Total-N);
+iterate_sum([N|Nums], Target, Queue, Total)
+  when Total < Target ->
+	NewQueue = queue:in(N, Queue),
+	iterate_sum(Nums, Target, NewQueue, Total+N).
